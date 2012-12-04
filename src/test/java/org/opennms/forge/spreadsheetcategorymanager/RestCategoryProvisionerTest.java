@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opennms.forge.restclient.utils.OnmsRestConnectionParameter;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
-import org.opennms.forge.spreadsheetcategorymanage.RestCategoryProvisioner;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +84,6 @@ public class RestCategoryProvisionerTest {
 
     @Test
     public void testGenerateOdsFile() {
-        m_provider.generateOdsFile(m_foreignSource);
+        m_provider.generateOdsFile();
     }
 }

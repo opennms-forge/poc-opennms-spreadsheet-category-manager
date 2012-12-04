@@ -25,17 +25,18 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-package org.opennms.forge.spreadsheetcategorymanage;
+package org.opennms.forge.spreadsheetcategorymanager;
 
-import com.sun.jersey.client.apache.ApacheHttpClient;
+
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.opennms.forge.restclient.utils.OnmsRestConnectionParameter;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
-import org.opennms.forge.restclient.utils.RestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -47,7 +48,7 @@ public class Starter {
 
     private static Logger logger = LoggerFactory.getLogger(Starter.class);
 
-    @Option(name = "-baseurl", required = true, usage = "baseurl of the system to work with; demo.opennms.com/opennms/")
+    @Option(name = "-baseurl", required = true, usage = "baseurl of the system to work with; http://demo.opennms.com/opennms/")
     private String baseUrl = "http://localhost:8980/opennms/";
 
     @Option(name = "-username", required = true, usage = "username to work with the system")
@@ -68,10 +69,13 @@ public class Starter {
     @Option(name = "-generateOds", usage = "if this option is set, just a ods file with the data from the remote system will be created in temp folder.")
     private boolean generateOds = false;
 
+    private RestConnectionParameter restConnectionParameter;
+
     /**
      * Set maximal terminal width for line breaks
      */
     private final int TERMINAL_WIDTH = 120;
+
 
     public static void main(String[] args) throws IOException {
         new Starter().doMain(args);
@@ -80,16 +84,33 @@ public class Starter {
     public void doMain(String[] args) {
 
         CmdLineParser parser = new CmdLineParser(this);
-
         parser.setUsageWidth(TERMINAL_WIDTH);
 
+        logger.info("OpenNMS Category Provisioning");
         try {
-            RestConnectionParameter restConnectionParameter = new OnmsRestConnectionParameter(baseUrl, userName, password);
-            ApacheHttpClient httpClient = RestHelper.createApacheHttpClient(restConnectionParameter);
+            restConnectionParameter = new OnmsRestConnectionParameter(baseUrl, userName, password);
+//            ApacheHttpClient httpClient = RestHelper.createApacheHttpClient(restConnectionParameter);
 
         } catch (MalformedURLException e) {
             logger.error("Invalid base URL '{}'. Error message: '{}'", baseUrl, e.getMessage());
             System.exit(1);
+        }
+        try {
+            parser.parseArgument(args);
+            File odsFile = new File(odsFilePath);
+            if (odsFile.exists() && odsFile.canRead()) {
+                RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(restConnectionParameter, odsFile, foreignSource, apply);
+                if(generateOds) {
+                    restCategoryProvisioner.generateOdsFile();
+                } else {
+                    restCategoryProvisioner.getRequisitionNodesToUpdate();
+                }
+            }
+            else {
+                logger.info("The odsFile '{}' dose not exist or is not readable, sorry.", odsFilePath);
+            }
+        } catch (CmdLineException ex) {
+            parser.printUsage(System.err);
         }
 
         logger.info("Thanks for computing with OpenNMS!");

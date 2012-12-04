@@ -25,7 +25,7 @@
  *     http://www.opennms.org/
  *     http://www.opennms.com/
  *******************************************************************************/
-package org.opennms.forge.spreadsheetcategorymanage;
+package org.opennms.forge.spreadsheetcategorymanager;
 
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import org.opennms.forge.provisioningrestclient.api.RequisitionManager;
@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.opennms.forge.spreadsheetcategorymanager.utils.SpreadsheetLayouter;
 
 /**
  * <p>RestCategoryProvisioner class.</p>
@@ -187,15 +188,15 @@ public class RestCategoryProvisioner {
      * <p/>
      * TODO: Read all categories
      * TODO: Read all nodes, labels and foreign-ids
-     *
-     * @param foreignSource Name of provisioning requisition to generate the ODS file
      */
-    public void generateOdsFile(String foreignSource) {
+    public void generateOdsFile() {
         // read the requisition by using the RestRequisitionManager
+        m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
         Requisition requisition = m_requisitionManager.getRequisition();
 
         SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
-        spreadsheetReader.getSpeadsheetFromRequisition(requisition);
+        File generatedOdsFile = spreadsheetReader.getSpeadsheetFromRequisition(requisition);
+        File formattedOdsFile = SpreadsheetLayouter.layoutGeneratedOdsFile(generatedOdsFile);
 
         // read all categories
 

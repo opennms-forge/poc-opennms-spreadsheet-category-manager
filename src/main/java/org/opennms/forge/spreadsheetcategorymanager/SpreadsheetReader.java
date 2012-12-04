@@ -18,7 +18,7 @@
  * For more information contact: OpenNMS(R) Licensing <license@opennms.org> http://www.opennms.org/ http://www.opennms.com/
  * *****************************************************************************
  */
-package org.opennms.forge.spreadsheetcategorymanage;
+package org.opennms.forge.spreadsheetcategorymanager;
 
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
@@ -32,6 +32,7 @@ import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -94,13 +95,19 @@ public class SpreadsheetReader {
         return nodes;
     }
 
-    public void getSpeadsheetFromRequisition(Requisition requisition) {
+    public File getSpeadsheetFromRequisition(Requisition requisition) {
+        if (requisition == null) {
+            logger.error("Requisition was null");
+            return null;
+        }
+        File odsOutFile = new File(System.getProperty("java.io.tmpdir") + File.separator + requisition.getForeignSource() + ".ods");
         try {
-            OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.newSpreadsheetDocument();
+            InputStream template = this.getClass().getClassLoader().getResourceAsStream("template.ods");
+            OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.loadDocument(template);
             OdfTable thresholdTable = spreadsheet.getTableList().get(0);
             thresholdTable.setTableName(requisition.getForeignSource() + " " + "TH");
 
-            OdfTable categoryTable = OdfTable.newTable(spreadsheet);
+            OdfTable categoryTable = spreadsheet.getTableList().get(1);
             categoryTable.setTableName(requisition.getForeignSource() + " " + "CATEGORIES");
 
             Map<String, RequisitionNode> reqNodes = new TreeMap<String, RequisitionNode>();
@@ -124,11 +131,13 @@ public class SpreadsheetReader {
             writeCategoriesIntoSheet(categoryTable.getRowByIndex(0), categories, requisition.getForeignSource());
             writeNodesIntoSheet(categoryTable, reqNodes, categories);
 
-            spreadsheet.save(new File(System.getProperty("java.io.tmpdir") + File.separator + requisition.getForeignSource() + ".ods"));
+            spreadsheet.save(odsOutFile);
+            logger.info("saved '{}'", odsOutFile);
 
         } catch (Exception ex) {
             logger.error("Building Spreadsheet went wrong", ex);
         }
+        return odsOutFile;
     }
 
     private void writeCategoriesIntoSheet(OdfTableRow categoryRow, Set<String> categories, String foreignSource) {
@@ -146,11 +155,13 @@ public class SpreadsheetReader {
         int nodeCellIndex = 1;
         for (RequisitionNode reqNode : reqNodes.values()) {
             nodeColumn.getCellByIndex(nodeCellIndex).setDisplayText(reqNode.getNodeLabel());
-            for (int categoryIndex = 1; categoryIndex <= categories.size(); categoryIndex++) {
-                if (reqNode.getCategories().contains(new RequisitionCategory(categoryRow.getCellByIndex(categoryIndex).getDisplayText()))) {
-                    table.getRowByIndex(nodeCellIndex).getCellByIndex(categoryIndex).setDisplayText("X");
-                } else {
-                    table.getRowByIndex(nodeCellIndex).getCellByIndex(categoryIndex).setDisplayText("");
+            if (categories.size() > 0) {
+                for (int categoryIndex = 1; categoryIndex <= categories.size(); categoryIndex++) {
+                    if (reqNode.getCategories().contains(new RequisitionCategory(categoryRow.getCellByIndex(categoryIndex).getDisplayText()))) {
+                        table.getRowByIndex(nodeCellIndex).getCellByIndex(categoryIndex).setDisplayText("X");
+                    } else {
+                        table.getRowByIndex(nodeCellIndex).getCellByIndex(categoryIndex).setDisplayText("");
+                    }
                 }
             }
             nodeCellIndex++;

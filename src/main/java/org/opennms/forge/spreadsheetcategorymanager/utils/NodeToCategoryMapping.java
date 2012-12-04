@@ -70,7 +70,7 @@ public class NodeToCategoryMapping {
         return removeCategories;
     }
 
-    public void removeCategories(List<RequisitionCategory> removeCategories) {
+    public void setRemoveCategories(List<RequisitionCategory> removeCategories) {
         this.removeCategories = removeCategories;
     }
 
