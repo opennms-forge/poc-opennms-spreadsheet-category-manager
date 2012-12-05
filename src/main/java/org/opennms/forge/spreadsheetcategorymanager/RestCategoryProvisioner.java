@@ -27,7 +27,6 @@
  *******************************************************************************/
 package org.opennms.forge.spreadsheetcategorymanager;
 
-import com.sun.jersey.client.apache.ApacheHttpClient;
 import org.opennms.forge.provisioningrestclient.api.RequisitionManager;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
 import org.opennms.forge.spreadsheetcategorymanager.utils.NodeToCategoryMapping;
@@ -57,11 +56,6 @@ public class RestCategoryProvisioner {
     private static Logger logger = LoggerFactory.getLogger(RestCategoryProvisioner.class);
 
     /**
-     * Base URL for OpenNMS ReST services
-     */
-    private String m_baseUrl;
-
-    /**
      * ODS file with node and category association
      */
     private File m_odsFile;
@@ -76,11 +70,6 @@ public class RestCategoryProvisioner {
      * sanity check first
      */
     private boolean m_apply = false;
-
-    /**
-     * Web client to handle the ReST calls
-     */
-    private ApacheHttpClient m_httpClient;
 
     /**
      * Contains the nodes from OpenNMS and provides access to the requisition node
@@ -103,6 +92,7 @@ public class RestCategoryProvisioner {
         this.m_odsFile = odsFile;
         this.m_foreignSource = foreignSource;
         this.m_apply = apply;
+        this.m_restRestConnectionParameter = restConnectionParameter;
         this.m_requisitionManager = new RequisitionManager(restConnectionParameter);
     }
 
@@ -185,10 +175,10 @@ public class RestCategoryProvisioner {
      * <p/>
      * Generate an ODS file from an OpenNMS provisioning requisition identified by name.
      * <p/>
-     * TODO: Read all categories
      * TODO: Read all nodes, labels and foreign-ids
+     * @return The generated OdsFile for the foreignSource of the RestCategoryProvider.
      */
-    public void generateOdsFile() {
+    public File generateOdsFile() {
         // read the requisition by using the RestRequisitionManager
         m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
         Requisition requisition = m_requisitionManager.getRequisition();
@@ -197,8 +187,19 @@ public class RestCategoryProvisioner {
         File generatedOdsFile = spreadsheetReader.getSpeadsheetFromRequisition(requisition);
         File formattedOdsFile = SpreadsheetLayouter.layoutGeneratedOdsFile(generatedOdsFile);
 
-        // read all categories
+        return formattedOdsFile;
+    }
 
-        // read all nodes, labels and foreign-ids
+    public List<File> generateAllOdsFiles() {
+        List<File> odsFiles = new ArrayList<File>();
+
+        RestRequisitionProvider requisitionProvider = new RestRequisitionProvider(m_restRestConnectionParameter);
+        RequisitionCollection allRequisitions = requisitionProvider.getAllRequisitions("");
+        
+        SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
+        for (Requisition requisition : allRequisitions) {
+            odsFiles.add(SpreadsheetLayouter.layoutGeneratedOdsFile(spreadsheetReader.getSpeadsheetFromRequisition(requisition)));
+        }
+        return odsFiles;
     }
 }

@@ -35,6 +35,12 @@
             <artifactId>odfdom-java</artifactId>
             <version>0.8.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.opennms.forge</groupId>
+            <artifactId>opennms-rest-client-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

@@ -27,18 +27,15 @@
  *******************************************************************************/
 package org.opennms.forge.spreadsheetcategorymanager;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opennms.forge.restclient.utils.OnmsRestConnectionParameter;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
-import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.List;
 
 /**
  * <p>RestCategoryProvisionerTest class.</p>
@@ -52,11 +49,17 @@ public class RestCategoryProvisionerTest {
 
     private static Logger logger = LoggerFactory.getLogger(RestCategoryProvisionerTest.class);
 
-    private String m_baseUrl = "http://localhost:8980/opennms/";
+//    private String m_baseUrl = "http://localhost:8980/opennms/";
+//
+//    private String m_userName = "admin";
+//
+//    private String m_password = "admin";
 
-    private String m_userName = "admin";
+    private String m_baseUrl = "http://demo.opennms.com/opennms/";
 
-    private String m_password = "admin";
+    private String m_userName = "demo";
+
+    private String m_password = "demo";
 
     private File m_odsFile = new File("/home/tak/test.ods");
 
@@ -77,13 +80,7 @@ public class RestCategoryProvisionerTest {
     }
 
     @Test
-    public void testDoThings() {
-        List<RequisitionNode> requisitionNodesToUpdate = m_provider.getRequisitionToUpdate();
-        Assert.assertEquals(4, requisitionNodesToUpdate.size());
-    }
-
-    @Test
-    public void testGenerateOdsFile() {
-        m_provider.generateOdsFile();
+    public void testGenerateAllOdsFile() {
+        m_provider.generateAllOdsFiles();
     }
 }
