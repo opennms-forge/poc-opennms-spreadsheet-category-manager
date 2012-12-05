@@ -59,10 +59,6 @@ public class RestCategoryProvisioner {
      */
     private File m_odsFile;
     /**
-     * Name of the provisioning requisition
-     */
-    private String m_foreignSource;
-    /**
      * Default do not apply the new categories on the node, give a feedback for sanity check first
      */
     private boolean m_apply = false;
@@ -83,69 +79,53 @@ public class RestCategoryProvisioner {
      * @param apply Flag for preview or directly apply changes in OpenNMS and synchronize the OpenNMS database
      */
     public RestCategoryProvisioner(RestConnectionParameter restConnectionParameter, String foreignSource, Boolean apply) {
-        this.m_foreignSource = foreignSource;
         this.m_apply = apply;
         this.m_restRestConnectionParameter = restConnectionParameter;
-        this.m_requisitionManager = new RequisitionManager(restConnectionParameter);
+        this.m_requisitionManager = new RequisitionManager(restConnectionParameter, foreignSource);
     }
 
     /**
-     * <p>getRequisitionToUpdate</p>
+     * <p>readNodeToCategoryMappingsFromOdsFile</p>
      * <p/>
-     * Get a list of all requisition nodes and apply all categories which are defined in the ODS sheet.
+     * Get a collection of all Node to category mappings from the ODS file.
      *
-     * @return List of requisition nodes as {@link org.opennms.netmgt.provision.persist.requisition.Requisition}
+     * @param odsFile the ODS File to read node to category mappings from
+     * @return Collection of NodeToCategoryMappings from ODS File
      */
-    public Requisition getRequisitionToUpdate() {
+    public Collection<NodeToCategoryMapping> readNodeToCategoryMappingsFromOdsFile(File odsFile) {
 
-        // Requisition with updated surveillance categories and update ready
-        Requisition requisitionToUpdate = null;
+        Collection<NodeToCategoryMapping> nodeToCategoryMappings = new ArrayList<NodeToCategoryMapping>();
 
         //read node to category mappings from spreadsheet
         SpreadsheetReader spreadsheetReader;
 
-        //create and prepare RestRequisitionManager
-        m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
-
         try {
-            spreadsheetReader = new SpreadsheetReader(this.m_odsFile);
-            Collection<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile();
-
-            requisitionToUpdate = getRequisitionToUpdate(nodeToCategoryMappings, m_requisitionManager);
+            spreadsheetReader = new SpreadsheetReader(odsFile);
+            nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile();
 
         } catch (IOException e) {
             logger.error("Error on reading spreadsheet with from '{}'.", this.m_odsFile.getAbsoluteFile(), e);
         }
 
-        return requisitionToUpdate;
+        return nodeToCategoryMappings;
     }
 
-    /**
-     * <p>getRequisitionToUpdate</p>
-     * <p/>
-     * Private method to build the list of the applied requisition nodes. Remove and add all categories defined by the
-     * nodeToCategoryMappings and return a list of requisition nodes.
-     *
-     * @param nodeToCategoryMappings Mapping from nodes and surveillance categories {@link java.util.List<RequisitionNode>}
-     * @param requisitionManager Requisition manager handles the node representation from OpenNMS
-     * @return Requisition with nodes which has to be provisioned as
-     * {@link org.opennms.netmgt.provision.persist.requisition.Requisition>}
-     */
-    private Requisition getRequisitionToUpdate(Collection<NodeToCategoryMapping> nodeToCategoryMappings, RequisitionManager requisitionManager) {
+    //TODO JavaDoc
+    private void changeCategoryMappingsInManagedRequisition(Collection<NodeToCategoryMapping> nodeToCategoryMappings) {
 
-        for (NodeToCategoryMapping node2Category : nodeToCategoryMappings) {
-            RequisitionNode requisitionNode = requisitionManager.getRequisitionNode(node2Category.getNodeLabel());
+        for (NodeToCategoryMapping nodeToCategoryMapping : nodeToCategoryMappings) {
+            RequisitionNode requisitionNode = m_requisitionManager.getRequisitionNode(nodeToCategoryMapping.getNodeLabel());
             if (requisitionNode != null) {
 
                 //add all set categories
                 Integer initialAmountOfCategories = requisitionNode.getCategories().size();
-                for (RequisitionCategory addCategory : node2Category.getAddCategories()) {
+                for (RequisitionCategory addCategory : nodeToCategoryMapping.getAddCategories()) {
                     requisitionNode.putCategory(addCategory);
                 }
 
                 //remove all not set categories
                 Integer afterAddingAmountOfCategories = requisitionNode.getCategories().size();
-                for (RequisitionCategory removeCategory : node2Category.getRemoveCategories()) {
+                for (RequisitionCategory removeCategory : nodeToCategoryMapping.getRemoveCategories()) {
                     requisitionNode.deleteCategory(removeCategory);
                 }
                 Integer afterRemoveAmountOfCategories = requisitionNode.getCategories().size();
@@ -155,20 +135,13 @@ public class RestCategoryProvisioner {
                     logger.info("RequisitionNode '{}' has no updates", requisitionNode.getNodeLabel());
                 } else {
                     logger.info("RequisitionNode '{}' has updates", requisitionNode.getNodeLabel());
-                    requisitionManager.getRequisition().putNode(requisitionNode);
+                    m_requisitionManager.getRequisition().putNode(requisitionNode);
                 }
 
             } else {
-                logger.info("RequisitionNode '{}' is unknown on the system", node2Category.getNodeLabel());
+                logger.info("RequisitionNode '{}' is unknown on the system", nodeToCategoryMapping.getNodeLabel());
             }
         }
-
-        // Logging to see for which node new surveillance categories will be set
-//        for (RequisitionNode reqNode : requisitionToUpdate.getNodes()) {
-//            logger.info("Node to change '{}'", reqNode.getNodeLabel());
-//        }
-
-        return requisitionManager.getRequisition();
     }
 
     /**
@@ -179,8 +152,6 @@ public class RestCategoryProvisioner {
      * @return The generated OdsFile for the foreignSource of the RestCategoryProvider.
      */
     public File generateOdsFile() {
-        // read the requisition by using the RestRequisitionManager
-        m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
         Requisition requisition = m_requisitionManager.getRequisition();
 
         SpreadsheetWriter spreadsheetWriter = new SpreadsheetWriter();
@@ -220,16 +191,16 @@ public class RestCategoryProvisioner {
             logger.error("Cannot read ODS file for import in '{}'.", filename);
             System.exit(1);
         }
-        this.m_odsFile = odsFile;
         
         logger.debug("ODS file '{}' for import is readable", odsFile.getAbsoluteFile());
+        Collection<NodeToCategoryMapping> nodeToCategoryMappings = readNodeToCategoryMappingsFromOdsFile(odsFile);
 
-        RestRequisitionProvider restRequisitionProvider = m_requisitionManager.getRestRequisitionProvider();
+        changeCategoryMappingsInManagedRequisition(nodeToCategoryMappings);
 
-        restRequisitionProvider.pushRequisition(getRequisitionToUpdate());
+        m_requisitionManager.sendManagedRequisitionToOpenNMS();
 
         if (m_apply) {
-            restRequisitionProvider.synchronizeRequisitionSkipExisting(m_foreignSource);
+            m_requisitionManager.synchronizeManagedRequisitionOnOpenNMS();
         }
     }
 }

@@ -54,7 +54,6 @@ public class SpreadsheetWriterTest {
     @Test
     public void testGetSpreadsheetFromRequisition() {
         writer.getSpreadsheetFromRequisition(generateTestRequisition());
-
     }
 
     private Requisition generateTestRequisition() {
@@ -66,6 +65,7 @@ public class SpreadsheetWriterTest {
 
         RequisitionNode reqNodeA = new RequisitionNode();
         reqNodeA.setNodeLabel("Node-A");
+        reqNodeA.setForeignId("ForeignId-A");
         reqNodeA.setCategories(reqCatA);
         reqNodes.add(reqNodeA);
 
@@ -74,6 +74,7 @@ public class SpreadsheetWriterTest {
 
         RequisitionNode reqNodeB = new RequisitionNode();
         reqNodeB.setNodeLabel("Node-B");
+        reqNodeB.setForeignId("ForeignId-B");
         reqNodeB.setCategories(reqCatB);
         reqNodes.add(reqNodeB);
 
