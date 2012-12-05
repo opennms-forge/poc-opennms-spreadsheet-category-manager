@@ -133,8 +133,6 @@ public class RestCategoryProvisioner {
      */
     private Requisition getRequisitionToUpdate(Collection<NodeToCategoryMapping> nodeToCategoryMappings, RequisitionManager requisitionManager) {
 
-        Requisition requisitionToUpdate = new Requisition();
-
         for (NodeToCategoryMapping node2Category : nodeToCategoryMappings) {
             RequisitionNode requisitionNode = requisitionManager.getRequisitionNode(node2Category.getNodeLabel());
             if (requisitionNode != null) {
@@ -157,7 +155,7 @@ public class RestCategoryProvisioner {
                     logger.info("RequisitionNode '{}' has no updates", requisitionNode.getNodeLabel());
                 } else {
                     logger.info("RequisitionNode '{}' has updates", requisitionNode.getNodeLabel());
-                    requisitionToUpdate.putNode(requisitionNode);
+                    requisitionManager.getRequisition().putNode(requisitionNode);
                 }
 
             } else {
@@ -166,11 +164,11 @@ public class RestCategoryProvisioner {
         }
 
         // Logging to see for which node new surveillance categories will be set
-        for (RequisitionNode reqNode : requisitionToUpdate.getNodes()) {
-            logger.info("Node to change '{}'", reqNode.getNodeLabel());
-        }
+//        for (RequisitionNode reqNode : requisitionToUpdate.getNodes()) {
+//            logger.info("Node to change '{}'", reqNode.getNodeLabel());
+//        }
 
-        return requisitionToUpdate;
+        return requisitionManager.getRequisition();
     }
 
     /**
@@ -222,6 +220,8 @@ public class RestCategoryProvisioner {
             logger.error("Cannot read ODS file for import in '{}'.", filename);
             System.exit(1);
         }
+        this.m_odsFile = odsFile;
+        
         logger.debug("ODS file '{}' for import is readable", odsFile.getAbsoluteFile());
 
         RestRequisitionProvider restRequisitionProvider = m_requisitionManager.getRestRequisitionProvider();
@@ -231,9 +231,5 @@ public class RestCategoryProvisioner {
         if (m_apply) {
             restRequisitionProvider.synchronizeRequisitionSkipExisting(m_foreignSource);
         }
-    }
-
-    void setOdsFile(File odsFile) {
-        this.m_odsFile = odsFile;
     }
 }
