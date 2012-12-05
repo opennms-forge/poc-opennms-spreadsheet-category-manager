@@ -115,14 +115,14 @@ public class RestCategoryProvisioner {
         Requisition requisitionToUpdate = null;
 
         //read node to category mappings from spreadsheet
-        SpreadsheetReader spreadsheetReader = null;
+        SpreadsheetReader spreadsheetReader;
 
         //create and prepare RestRequisitionManager
         m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
 
         try {
             spreadsheetReader = new SpreadsheetReader(this.m_odsFile);
-            List<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile(m_foreignSource);
+            Collection<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile();
 
             requisitionToUpdate = getRequisitionToUpdate(nodeToCategoryMappings, m_requisitionManager);
 
@@ -201,6 +201,8 @@ public class RestCategoryProvisioner {
 
         SpreadsheetWriter spreadsheetReader = new SpreadsheetWriter();
         File generatedOdsFile = spreadsheetReader.getSpreadsheetFromRequisition(requisition);
+
+        //TODO tak: This one is marked as redundant
         File formattedOdsFile = SpreadsheetLayouter.layoutGeneratedOdsFile(generatedOdsFile);
 
         return formattedOdsFile;

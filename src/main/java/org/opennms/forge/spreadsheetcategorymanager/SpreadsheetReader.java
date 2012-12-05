@@ -59,24 +59,20 @@ public class SpreadsheetReader {
         }
     }
 
-    public Collection<NodeToCategoryMapping> getNodeToCategoryMappingsFromFile(File odsFile, String tableName) {
+    public Collection<NodeToCategoryMapping> getNodeToCategoryMappingsFromFile() {
         Map<String, NodeToCategoryMapping> nodesToCategories = new HashMap<String, NodeToCategoryMapping>();
 
-        if (odsFile.exists() && odsFile.canRead()) {
-            try {
-                OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.loadDocument(odsFile);
+        try {
+            OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.loadDocument(this.m_odsFile);
 
-                for (OdfTable table : spreadsheet.getTableList()) {
-                    nodesToCategories = getNodeToCategoryMappingsFromTable(nodesToCategories, table);
-                }
-
-            } catch (Exception ex) {
-                logger.error("Reading spreadsheet went wrong", ex);
+            for (OdfTable table : spreadsheet.getTableList()) {
+                nodesToCategories = getNodeToCategoryMappingsFromTable(nodesToCategories, table);
             }
 
-        } else {
-            logger.error("OdsFile '{}' dose not exist or is not readable.", odsFile);
+        } catch (Exception ex) {
+            logger.error("Reading spreadsheet went wrong", ex);
         }
+
         return nodesToCategories.values();
     }
 
