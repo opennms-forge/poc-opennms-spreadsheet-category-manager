@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,14 +110,24 @@ public class RestCategoryProvisioner {
      */
     public Requisition getRequisitionToUpdate() {
 
+        // Requisition with updated surveillance categories and update ready
+        Requisition requisitionToUpdate = null;
+
+        //read node to category mappings from spreadsheet
+        SpreadsheetReader spreadsheetReader = null;
+
         //create and prepare RestRequisitionManager
         m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
 
-        //read node to category mappings from spreadsheet
-        SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
-        List<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile(m_odsFile, m_foreignSource);
+        try {
+            spreadsheetReader = new SpreadsheetReader(this.m_odsFile);
+            List<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile(m_foreignSource);
 
-        Requisition requisitionToUpdate = getRequisitionToUpdate(nodeToCategoryMappings, m_requisitionManager);
+            requisitionToUpdate = getRequisitionToUpdate(nodeToCategoryMappings, m_requisitionManager);
+
+        } catch (IOException e) {
+            logger.error("Error on reading spreadsheet with from '{}'.", this.m_odsFile.getAbsoluteFile(), e);
+        }
 
         return requisitionToUpdate;
     }
@@ -187,8 +198,8 @@ public class RestCategoryProvisioner {
         m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
         Requisition requisition = m_requisitionManager.getRequisition();
 
-        SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
-        File generatedOdsFile = spreadsheetReader.getSpeadsheetFromRequisition(requisition);
+        SpreadsheetWriter spreadsheetReader = new SpreadsheetWriter();
+        File generatedOdsFile = spreadsheetReader.getSpreadsheetFromRequisition(requisition);
         File formattedOdsFile = SpreadsheetLayouter.layoutGeneratedOdsFile(generatedOdsFile);
 
         return formattedOdsFile;
@@ -200,9 +211,9 @@ public class RestCategoryProvisioner {
         RestRequisitionProvider requisitionProvider = new RestRequisitionProvider(m_restRestConnectionParameter);
         RequisitionCollection allRequisitions = requisitionProvider.getAllRequisitions("");
 
-        SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
+        SpreadsheetWriter spreadsheetWriter = new SpreadsheetWriter();
         for (Requisition requisition : allRequisitions) {
-            odsFiles.add(SpreadsheetLayouter.layoutGeneratedOdsFile(spreadsheetReader.getSpeadsheetFromRequisition(requisition)));
+            odsFiles.add(SpreadsheetLayouter.layoutGeneratedOdsFile(spreadsheetWriter.getSpreadsheetFromRequisition(requisition)));
         }
         return odsFiles;
     }

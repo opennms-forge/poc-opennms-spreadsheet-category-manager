@@ -37,6 +37,7 @@ import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,16 +48,21 @@ public class SpreadsheetReaderTest {
 
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SpreadsheetReaderTest.class);
     private SpreadsheetReader reader;
+    private SpreadsheetWriter writer;
 
     @Before
     public void setup() {
-        reader = new SpreadsheetReader();
+        try {
+            reader = new SpreadsheetReader(new File("/home/tak/test.ods"));
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     @Ignore
     @Test
     public void testGetNodeCategoryChangeFromFile() {
-        List<NodeToCategoryMapping> nodeToCategoryMappings = reader.getNodeToCategoryMappingsFromFile(new File("/home/tak/test.ods"), "Threshold");
+        List<NodeToCategoryMapping> nodeToCategoryMappings = reader.getNodeToCategoryMappingsFromFile("Threshold");
         logger.info("Got '{}' NodeToCategoryMappings.", nodeToCategoryMappings.size());
         for (NodeToCategoryMapping nodeToCategoryMapping : nodeToCategoryMappings) {
             logger.info("NodeToCategoryMapping for '{}' found addCategory size is '{}' found remove Category size is '{}'", nodeToCategoryMapping.getNodeLabel(), nodeToCategoryMapping.getAddCategories().size(), nodeToCategoryMapping.getRemoveCategories().size());
@@ -64,8 +70,9 @@ public class SpreadsheetReaderTest {
     }
 
     @Test
-    public void testGetSpeadsheetFromRequisition() {
-        reader.getSpeadsheetFromRequisition(generateTestRequisition());
+    public void testGetSpreadsheetFromRequisition() {
+        writer.getSpreadsheetFromRequisition(generateTestRequisition());
+
     }
 
     private Requisition generateTestRequisition() {

@@ -149,13 +149,13 @@ public class Starter {
 
         // Check if the ODS file can be read
         if (!file.canRead()) {
-            logger.error("Cannot read OSD file for import in '{}'.", filename);
+            logger.error("Cannot read ODS file for import in '{}'.", filename);
             System.exit(1);
         }
         logger.debug("ODS file '{}' for import is readable", file.getAbsoluteFile());
 
         // We can run the category provisionier for every single requisition
-        RestCategoryProvisioner categoryProvisioner = new RestCategoryProvisioner(connParm, file, "foreignSource", false);
+        RestCategoryProvisioner categoryProvisioner = new RestCategoryProvisioner(connParm, file, this.m_foreignSource, false);
 
         Requisition requisitionToUpdate = new Requisition();
         RestRequisitionProvider restRequisitionProvider = requisitionManager.getRestRequisitionProvider();
