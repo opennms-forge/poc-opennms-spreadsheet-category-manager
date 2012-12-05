@@ -28,8 +28,8 @@
 package org.opennms.forge.spreadsheetcategorymanager;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opennms.forge.spreadsheetcategorymanager.utils.NodeToCategoryMapping;
 import org.opennms.netmgt.provision.persist.requisition.Requisition;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionCategory;
@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -53,19 +54,18 @@ public class SpreadsheetReaderTest {
         reader = new SpreadsheetReader();
     }
 
-    @Ignore
     @Test
     public void testGetNodeCategoryChangeFromFile() {
-        List<NodeToCategoryMapping> nodeToCategoryMappings = reader.getNodeToCategoryMappingsFromFile(new File("/home/tak/test.ods"), "Threshold");
-        logger.info("Got '{}' NodeToCategoryMappings.", nodeToCategoryMappings.size());
-        for (NodeToCategoryMapping nodeToCategoryMapping : nodeToCategoryMappings) {
-            logger.info("NodeToCategoryMapping for '{}' found addCategory size is '{}' found remove Category size is '{}'", nodeToCategoryMapping.getNodeLabel(), nodeToCategoryMapping.getAddCategories().size(), nodeToCategoryMapping.getRemoveCategories().size());
-        }
+        Collection<NodeToCategoryMapping> nodeToCategoryMappings = reader.getNodeToCategoryMappingsFromFile(new File("src/test/resources/ImportTest.ods"), "Testing");
+        assertEquals("Amount of found NodeToCategory Entries", 8, nodeToCategoryMappings.size());
+//        for (NodeToCategoryMapping nodeToCategoryMapping : nodeToCategoryMappings) {
+//            logger.info("NodeToCategoryMapping for '{}' found addCategory size is '{}' found remove Category size is '{}'", nodeToCategoryMapping.getNodeLabel(), nodeToCategoryMapping.getAddCategories().size(), nodeToCategoryMapping.getRemoveCategories().size());
+//        }
     }
 
     @Test
     public void testGetSpeadsheetFromRequisition() {
-        reader.getSpeadsheetFromRequisition(generateTestRequisition());
+        reader.getSpreadsheetFromRequisition(generateTestRequisition());
     }
 
     private Requisition generateTestRequisition() {

@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -114,7 +115,7 @@ public class RestCategoryProvisioner {
 
         //read node to category mappings from spreadsheet
         SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
-        List<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile(m_odsFile, m_foreignSource);
+        Collection<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile(m_odsFile, m_foreignSource);
 
         Requisition requisitionToUpdate = getRequisitionToUpdate(nodeToCategoryMappings, m_requisitionManager);
 
@@ -131,7 +132,7 @@ public class RestCategoryProvisioner {
      * @param requisitionManager     Requisition manager handles the node representation from OpenNMS
      * @return Requisition with nodes which has to be provisioned as {@link org.opennms.netmgt.provision.persist.requisition.Requisition>}
      */
-    private Requisition getRequisitionToUpdate(List<NodeToCategoryMapping> nodeToCategoryMappings, RequisitionManager requisitionManager) {
+    private Requisition getRequisitionToUpdate(Collection<NodeToCategoryMapping> nodeToCategoryMappings, RequisitionManager requisitionManager) {
 
         Requisition requisitionToUpdate = new Requisition();
 
@@ -188,7 +189,7 @@ public class RestCategoryProvisioner {
         Requisition requisition = m_requisitionManager.getRequisition();
 
         SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
-        File generatedOdsFile = spreadsheetReader.getSpeadsheetFromRequisition(requisition);
+        File generatedOdsFile = spreadsheetReader.getSpreadsheetFromRequisition(requisition);
         File formattedOdsFile = SpreadsheetLayouter.layoutGeneratedOdsFile(generatedOdsFile);
 
         return formattedOdsFile;
@@ -202,7 +203,7 @@ public class RestCategoryProvisioner {
 
         SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
         for (Requisition requisition : allRequisitions) {
-            odsFiles.add(SpreadsheetLayouter.layoutGeneratedOdsFile(spreadsheetReader.getSpeadsheetFromRequisition(requisition)));
+            odsFiles.add(SpreadsheetLayouter.layoutGeneratedOdsFile(spreadsheetReader.getSpreadsheetFromRequisition(requisition)));
         }
         return odsFiles;
     }
