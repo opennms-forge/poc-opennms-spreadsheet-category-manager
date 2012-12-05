@@ -34,7 +34,6 @@ import org.opennms.forge.restclient.utils.RestConnectionParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.net.MalformedURLException;
 
 /**
@@ -61,8 +60,6 @@ public class RestCategoryProvisionerTest {
 
     private String m_password = "demo";
 
-    private File m_odsFile = new File("/home/tak/test.ods");
-
     private String m_foreignSource = "RestProvisioningTest";
 
     private boolean m_apply = false;
@@ -73,7 +70,7 @@ public class RestCategoryProvisionerTest {
     public void setUp() {
         try {
             RestConnectionParameter conParm = new OnmsRestConnectionParameter(this.m_baseUrl, this.m_userName, this.m_password);
-            m_provider = new RestCategoryProvisioner(conParm, m_odsFile, m_foreignSource, m_apply);
+            m_provider = new RestCategoryProvisioner(conParm, m_foreignSource, m_apply);
         } catch (MalformedURLException e) {
             logger.error("Invalid base UrL '{}'. Error message: '{}'", this.m_baseUrl, e.getMessage());
         }

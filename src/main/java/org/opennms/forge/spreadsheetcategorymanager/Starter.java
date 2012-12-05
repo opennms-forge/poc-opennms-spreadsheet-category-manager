@@ -16,18 +16,15 @@
  * http://www.gnu.org/licenses/
  *
  * For more information contact: OpenNMS(R) Licensing <license@opennms.org> http://www.opennms.org/ http://www.opennms.com/
- ******************************************************************************
+ * *****************************************************************************
  */
 package org.opennms.forge.spreadsheetcategorymanager;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.opennms.forge.provisioningrestclient.api.RequisitionManager;
-import org.opennms.forge.restclient.api.RestRequisitionProvider;
 import org.opennms.forge.restclient.utils.OnmsRestConnectionParameter;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
-import org.opennms.netmgt.provision.persist.requisition.Requisition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +37,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * This starter just provides the command line parameter handling.
+ * 
  * @author Markus@OpenNMS.org
  */
 public class Starter {
@@ -111,57 +110,18 @@ public class Starter {
             System.exit(1);
         }
 
-        File odsFile = new File(m_odsFileSource);
-        if (odsFile.exists() && odsFile.canRead()) {
-            RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, odsFile, m_foreignSource, m_apply);
-            if (m_generateOds) {
-                if (allForeignSources) {
-                    restCategoryProvisioner.generateAllOdsFiles();
-                } else {
-                    restCategoryProvisioner.generateOdsFile();
-                }
+        RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, m_foreignSource, m_apply);
+        if (m_generateOds) {
+            if (allForeignSources) {
+                restCategoryProvisioner.generateAllOdsFiles();
             } else {
-                restCategoryProvisioner.getRequisitionToUpdate();
+                restCategoryProvisioner.generateOdsFile();
             }
         } else {
-            logger.info("The odsFile '{}' dose not exist or is not readable, sorry.", m_odsFileSource);
+            restCategoryProvisioner.importCategoriesFromOds(m_odsFileSource);
         }
 
         logger.info("Thanks for computing with OpenNMS!");
-    }
-
-    /**
-     * <p>importCategoriesFromOds</p>
-     * <p/>
-     * Import nodes with spreadsheet provisioned surveillance categories into OpenNMS.
-     *
-     * @param filename Spreadsheet in ODS format
-     * @param connParm Connection parameter to OpenNMS ReST services
-     * @param apply    Flag if the change is directly synchronized to the OpenNMS database
-     */
-    public void importCategoriesFromOds(String filename, RestConnectionParameter connParm, boolean apply) {
-        RequisitionManager requisitionManager = new RequisitionManager(connParm);
-
-        File file = new File(filename);
-
-        // Check if the ODS file can be read
-        if (!file.canRead()) {
-            logger.error("Cannot read ODS file for import in '{}'.", filename);
-            System.exit(1);
-        }
-        logger.debug("ODS file '{}' for import is readable", file.getAbsoluteFile());
-
-        // We can run the category provisionier for every single requisition
-        RestCategoryProvisioner categoryProvisioner = new RestCategoryProvisioner(connParm, file, this.m_foreignSource, false);
-
-        RestRequisitionProvider restRequisitionProvider = requisitionManager.getRestRequisitionProvider();
-
-        Requisition requisitionToUpdate = categoryProvisioner.getRequisitionToUpdate();
-        restRequisitionProvider.pushRequisition(requisitionToUpdate);
-
-        if (apply) {
-            restRequisitionProvider.synchronizeRequisitionSkipExisting(requisitionToUpdate.getForeignSource());
-        }
     }
 
     private File setupWorkspace() {
