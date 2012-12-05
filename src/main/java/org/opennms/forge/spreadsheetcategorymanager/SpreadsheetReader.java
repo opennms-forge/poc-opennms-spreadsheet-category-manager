@@ -24,15 +24,13 @@ import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
 import org.odftoolkit.odfdom.doc.table.OdfTableColumn;
 import org.odftoolkit.odfdom.doc.table.OdfTableRow;
-import org.odftoolkit.odfdom.type.Color;
 import org.opennms.forge.spreadsheetcategorymanager.utils.NodeToCategoryMapping;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionCategory;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>SpreadsheetReader class.</p>
@@ -61,45 +59,64 @@ public class SpreadsheetReader {
         }
     }
 
-    public List<NodeToCategoryMapping> getNodeToCategoryMappingsFromFile(String tableName) {
-        List<NodeToCategoryMapping> nodes = new LinkedList<NodeToCategoryMapping>();
-        List<String> categories = new LinkedList<String>();
-        try {
-            OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.loadDocument(this.m_odsFile);
-            OdfTable table = spreadsheet.getTableByName(tableName);
-            OdfTableColumn nodeColumn = table.getColumnByIndex(0);
-            OdfTableRow categoryRow = table.getRowByIndex(0);
+    public Collection<NodeToCategoryMapping> getNodeToCategoryMappingsFromFile(File odsFile, String tableName) {
+        Map<String, NodeToCategoryMapping> nodesToCategories = new HashMap<String, NodeToCategoryMapping>();
 
-            //Build a list of all Categories
-            int categoryIndex = 1;
-            while (!categoryRow.getCellByIndex(categoryIndex).getDisplayText().equals("")) {
-                categories.add(categoryRow.getCellByIndex(categoryIndex).getDisplayText());
-                categoryIndex++;
-            }
+        if (odsFile.exists() && odsFile.canRead()) {
+            try {
+                OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.loadDocument(odsFile);
 
-            //Build a list of all Nodes with AddCategories and RemoveCategories
-            int rowIndex = 1;
-            while (!nodeColumn.getCellByIndex(rowIndex).getDisplayText().equals("")) {
-                NodeToCategoryMapping node = new NodeToCategoryMapping(nodeColumn.getCellByIndex(rowIndex).getDisplayText());
-
-                for (int cellId = 1; cellId <= categories.size(); cellId++) {
-                    if (table.getRowByIndex(rowIndex).getCellByIndex(cellId).getDisplayText().equals("")) {
-                        table.getRowByIndex(rowIndex).getCellByIndex(cellId).setCellBackgroundColor(Color.RED);
-                        node.getRemoveCategories().add(new RequisitionCategory(categories.get(cellId - 1)));
-                        logger.debug("Node '{}' found removeCategory '{}'", node.getNodeLabel(), categories.get(cellId - 1));
-                    } else {
-                        table.getRowByIndex(rowIndex).getCellByIndex(cellId).setCellBackgroundColor(Color.GREEN);
-                        node.getAddCategories().add(new RequisitionCategory(categories.get(cellId - 1)));
-                        logger.debug("Node '{}' found addCategory    '{}'", node.getNodeLabel(), categories.get(cellId - 1));
-                    }
+                for (OdfTable table : spreadsheet.getTableList()) {
+                    nodesToCategories = getNodeToCategoryMappingsFromTable(nodesToCategories, table);
                 }
-                nodes.add(node);
-                rowIndex++;
+
+            } catch (Exception ex) {
+                logger.error("Reading spreadsheet went wrong", ex);
             }
-            spreadsheet.save(new File(System.getProperty("java.io.tmpdir") + File.separator + "newFile.ods"));
-        } catch (Exception ex) {
-            logger.error("Reading odsFile went wrong", ex);
+
+        } else {
+            logger.error("OdsFile '{}' dose not exist or is not readable.", odsFile);
         }
-        return nodes;
+        return nodesToCategories.values();
+    }
+
+    private Map<String, NodeToCategoryMapping> getNodeToCategoryMappingsFromTable(Map<String, NodeToCategoryMapping> nodesToCategories, OdfTable table) {
+        logger.info("Reading Nodes and Categories from '{}'", table.getTableName());
+        OdfTableColumn nodeColumn = table.getColumnByIndex(0);
+        OdfTableRow categoryRow = table.getRowByIndex(0);
+        NodeToCategoryMapping nodeToCategoryMapping;
+
+        //Build a list of all Categories
+        List<String> categories = new LinkedList<String>();
+        int categoryIndex = 1;
+        while (!categoryRow.getCellByIndex(categoryIndex).getDisplayText().equals("")) {
+            categories.add(categoryRow.getCellByIndex(categoryIndex).getDisplayText().trim());
+            categoryIndex++;
+        }
+
+        //Build a list of all Nodes with AddCategories and RemoveCategories
+        int rowIndex = 1;
+        while (!nodeColumn.getCellByIndex(rowIndex).getDisplayText().equals("")) {
+            //Use already existing nodeToCategoryMapping objects if possible
+            String nodeLabel = nodeColumn.getCellByIndex(rowIndex).getDisplayText().trim();
+            if (nodesToCategories.containsKey(nodeLabel)) {
+                nodeToCategoryMapping = nodesToCategories.get(nodeLabel);
+            } else {
+                nodeToCategoryMapping = new NodeToCategoryMapping(nodeLabel);
+                nodesToCategories.put(nodeLabel, nodeToCategoryMapping);
+            }
+
+            for (int cellId = 1; cellId <= categories.size(); cellId++) {
+                if (table.getRowByIndex(rowIndex).getCellByIndex(cellId).getDisplayText().equals("")) {
+                    nodeToCategoryMapping.getRemoveCategories().add(new RequisitionCategory(categories.get(cellId - 1).trim()));
+                    logger.debug("Node '{}' found removeCategory '{}'", nodeToCategoryMapping.getNodeLabel(), categories.get(cellId - 1));
+                } else {
+                    nodeToCategoryMapping.getAddCategories().add(new RequisitionCategory(categories.get(cellId - 1).trim()));
+                    logger.debug("Node '{}' found addCategory    '{}'", nodeToCategoryMapping.getNodeLabel(), categories.get(cellId - 1));
+                }
+            }
+            rowIndex++;
+        }
+        return nodesToCategories;
     }
 }
