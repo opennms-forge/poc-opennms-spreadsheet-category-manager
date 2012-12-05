@@ -29,18 +29,14 @@ package org.opennms.forge.spreadsheetcategorymanager;
 
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.opennms.forge.spreadsheetcategorymanager.utils.NodeToCategoryMapping;
-import org.opennms.netmgt.provision.persist.requisition.Requisition;
-import org.opennms.netmgt.provision.persist.requisition.RequisitionCategory;
-import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Markus@OpenNMS.org
@@ -49,12 +45,11 @@ public class SpreadsheetReaderTest {
 
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(SpreadsheetReaderTest.class);
     private SpreadsheetReader reader;
-    private SpreadsheetWriter writer;
 
     @Before
     public void setup() {
         try {
-            reader = new SpreadsheetReader(new File("/home/tak/test.ods"));
+            reader = new SpreadsheetReader(new File("src/test/resources/ImportTest.ods"));
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -62,40 +57,10 @@ public class SpreadsheetReaderTest {
 
     @Test
     public void testGetNodeCategoryChangeFromFile() {
-Collection<NodeToCategoryMapping> nodeToCategoryMappings = reader.getNodeToCategoryMappingsFromFile(new File("src/test/resources/ImportTest.ods"), "Testing");
+        Collection<NodeToCategoryMapping> nodeToCategoryMappings = reader.getNodeToCategoryMappingsFromFile();
         assertEquals("Amount of found NodeToCategory Entries", 8, nodeToCategoryMappings.size());
 //        for (NodeToCategoryMapping nodeToCategoryMapping : nodeToCategoryMappings) {
 //            logger.info("NodeToCategoryMapping for '{}' found addCategory size is '{}' found remove Category size is '{}'", nodeToCategoryMapping.getNodeLabel(), nodeToCategoryMapping.getAddCategories().size(), nodeToCategoryMapping.getRemoveCategories().size());
 //        }
-    }
-    
-    @Test
-    public void testGetSpreadsheetFromRequisition() {
-        writer.getSpreadsheetFromRequisition(generateTestRequisition());
-
-    }
-
-    private Requisition generateTestRequisition() {
-        Requisition requisition = new Requisition("TestRequisition");
-        List<RequisitionNode> reqNodes = new ArrayList<RequisitionNode>();
-
-        List<RequisitionCategory> reqCatA = new ArrayList<RequisitionCategory>();
-        reqCatA.add(new RequisitionCategory("Category-A"));
-
-        RequisitionNode reqNodeA = new RequisitionNode();
-        reqNodeA.setNodeLabel("Node-A");
-        reqNodeA.setCategories(reqCatA);
-        reqNodes.add(reqNodeA);
-
-        List<RequisitionCategory> reqCatB = new ArrayList<RequisitionCategory>();
-        reqCatB.add(new RequisitionCategory("Category-B"));
-
-        RequisitionNode reqNodeB = new RequisitionNode();
-        reqNodeB.setNodeLabel("Node-B");
-        reqNodeB.setCategories(reqCatB);
-        reqNodes.add(reqNodeB);
-
-        requisition.setNodes(reqNodes);
-        return requisition;
     }
 }
