@@ -38,7 +38,6 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
 
 /**
  * @author Markus@OpenNMS.org
@@ -77,6 +76,7 @@ public class Starter {
     private final int TERMINAL_WIDTH = 120;
 
     private final String WORKSPACE_NAME = "SSCM_Workspace";
+
     private final String DATE_FORMAT = "yyyy-MM-dd_HH:mm:ss";
 
     public static void main(String[] args) throws IOException {
@@ -133,17 +133,14 @@ public class Starter {
     /**
      * <p>importCategoriesFromOds</p>
      * <p/>
-     * Import nodes with spreasheet provisioned surveillance categories into OpenNMS.
+     * Import nodes with spreadsheet provisioned surveillance categories into OpenNMS.
      *
      * @param filename Spreadsheet in ODS format
      * @param connParm Connection parameter to OpenNMS ReST services
      * @param apply    Flag if the change is directly synchronized to the OpenNMS database
      */
     public void importCategoriesFromOds(String filename, RestConnectionParameter connParm, boolean apply) {
-        RestConnectionParameter restConnectionParameter = connParm;
-        RequisitionManager requisitionManager = null;
-
-        requisitionManager = new RequisitionManager(connParm);
+        RequisitionManager requisitionManager = new RequisitionManager(connParm);
 
         File file = new File(filename);
 
@@ -157,10 +154,9 @@ public class Starter {
         // We can run the category provisionier for every single requisition
         RestCategoryProvisioner categoryProvisioner = new RestCategoryProvisioner(connParm, file, "foreignSource", false);
 
-        Requisition requisitionToUpdate = new Requisition();
         RestRequisitionProvider restRequisitionProvider = requisitionManager.getRestRequisitionProvider();
 
-        requisitionToUpdate = categoryProvisioner.getRequisitionToUpdate();
+        Requisition requisitionToUpdate = categoryProvisioner.getRequisitionToUpdate();
         restRequisitionProvider.pushRequisition(requisitionToUpdate);
 
         if (apply) {
@@ -178,7 +174,7 @@ public class Starter {
             workspace = new File(WORKSPACE_NAME + File.separator + dateString);
             workspace.mkdirs();
         } catch (ParseException ex) {
-            java.util.logging.Logger.getLogger(Starter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("Date String parsing went wrong", ex);
         }
         if (workspace != null && !(workspace.exists() && workspace.canRead() && workspace.canWrite())) {
             logger.error("Problem with Workspace folder '{}'", WORKSPACE_NAME + File.separator + dateString);
