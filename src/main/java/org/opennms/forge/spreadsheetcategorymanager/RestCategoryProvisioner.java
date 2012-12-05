@@ -31,6 +31,7 @@ import com.sun.jersey.client.apache.ApacheHttpClient;
 import org.opennms.forge.provisioningrestclient.api.RequisitionManager;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
 import org.opennms.forge.spreadsheetcategorymanager.utils.NodeToCategoryMapping;
+import org.opennms.forge.spreadsheetcategorymanager.utils.SpreadsheetLayouter;
 import org.opennms.netmgt.provision.persist.requisition.Requisition;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionCategory;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
@@ -38,9 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import org.opennms.forge.spreadsheetcategorymanager.utils.SpreadsheetLayouter;
 
 /**
  * <p>RestCategoryProvisioner class.</p>
@@ -108,14 +107,14 @@ public class RestCategoryProvisioner {
     }
 
     /**
-     * <p>getRequisitionNodesToUpdate</p>
+     * <p>getRequisitionToUpdate</p>
      * <p/>
      * Get a list of all requisition nodes and apply all categories which are defined in the
      * ODS sheet.
      *
-     * @return List of requisition nodes as {@link java.util.List<RequisitionNode>}
+     * @return List of requisition nodes as {@link org.opennms.netmgt.provision.persist.requisition.Requisition}
      */
-    public List<RequisitionNode> getRequisitionNodesToUpdate() {
+    public Requisition getRequisitionToUpdate() {
 
         //create and prepare RestRequisitionManager
         m_requisitionManager.loadNodesByLabelForRequisition(m_foreignSource, "");
@@ -124,24 +123,24 @@ public class RestCategoryProvisioner {
         SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
         List<NodeToCategoryMapping> nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile(m_odsFile, m_foreignSource);
 
-        List<RequisitionNode> requisitionNodesToUpdate = getRequisitionNodesToUpdate(nodeToCategoryMappings, m_requisitionManager);
+        Requisition requisitionToUpdate = getRequisitionToUpdate(nodeToCategoryMappings, m_requisitionManager);
 
-        return requisitionNodesToUpdate;
+        return requisitionToUpdate;
     }
 
     /**
-     * <p>getRequisitionNodesToUpdate</p>
+     * <p>getRequisitionToUpdate</p>
      * <p/>
      * Private method to build the list of the applied requisition nodes. Remove and add all categories defined by the nodeToCategoryMappings and
      * return a list of requisition nodes.
      *
      * @param nodeToCategoryMappings Mapping from nodes and surveillance categories {@link java.util.List<RequisitionNode>}
      * @param requisitionManager     Requisition manager handles the node representation from OpenNMS
-     * @return List of nodes which has to be provisioned as {@link java.util.List<RequisitionNode>}
+     * @return Requisition with nodes which has to be provisioned as {@link org.opennms.netmgt.provision.persist.requisition.Requisition>}
      */
-    private List<RequisitionNode> getRequisitionNodesToUpdate(List<NodeToCategoryMapping> nodeToCategoryMappings, RequisitionManager requisitionManager) {
+    private Requisition getRequisitionToUpdate(List<NodeToCategoryMapping> nodeToCategoryMappings, RequisitionManager requisitionManager) {
 
-        List<RequisitionNode> reqNodesToUpdate = new ArrayList<RequisitionNode>();
+        Requisition requisitionToUpdate = new Requisition();
 
         for (NodeToCategoryMapping node2Category : nodeToCategoryMappings) {
             RequisitionNode requisitionNode = requisitionManager.getRequisitionNode(node2Category.getNodeLabel());
@@ -165,7 +164,7 @@ public class RestCategoryProvisioner {
                     logger.info("RequisitionNode '{}' has no updates", requisitionNode.getNodeLabel());
                 } else {
                     logger.info("RequisitionNode '{}' has updates", requisitionNode.getNodeLabel());
-                    reqNodesToUpdate.add(requisitionNode);
+                    requisitionToUpdate.putNode(requisitionNode);
                 }
 
             } else {
@@ -174,11 +173,11 @@ public class RestCategoryProvisioner {
         }
 
         // Logging to see for which node new surveillance categories will be set
-        for (RequisitionNode reqNode : reqNodesToUpdate) {
+        for (RequisitionNode reqNode : requisitionToUpdate.getNodes()) {
             logger.info("Node to change '{}'", reqNode.getNodeLabel());
         }
 
-        return reqNodesToUpdate;
+        return requisitionToUpdate;
     }
 
     /**

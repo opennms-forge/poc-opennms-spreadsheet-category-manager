@@ -78,7 +78,7 @@ public class RestCategoryProvisionerTest {
 
     @Test
     public void testDoThings() {
-        List<RequisitionNode> requisitionNodesToUpdate = m_provider.getRequisitionNodesToUpdate();
+        List<RequisitionNode> requisitionNodesToUpdate = m_provider.getRequisitionToUpdate();
         Assert.assertEquals(4, requisitionNodesToUpdate.size());
     }
 
