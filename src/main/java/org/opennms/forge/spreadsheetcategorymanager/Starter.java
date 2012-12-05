@@ -31,6 +31,7 @@ import org.opennms.netmgt.provision.persist.requisition.Requisition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.text.DateFormatter;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -38,7 +39,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
-import javax.swing.text.DateFormatter;
 
 /**
  * @author Markus@OpenNMS.org
@@ -115,11 +115,11 @@ public class Starter {
         if (odsFile.exists() && odsFile.canRead()) {
             RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, odsFile, m_foreignSource, m_apply);
             if (m_generateOds) {
-              if (allForeignSources) {
-                restCategoryProvisioner.generateAllOdsFiles();
-              } else {
-                restCategoryProvisioner.generateOdsFile();
-              }
+                if (allForeignSources) {
+                    restCategoryProvisioner.generateAllOdsFiles();
+                } else {
+                    restCategoryProvisioner.generateOdsFile();
+                }
             } else {
                 restCategoryProvisioner.getRequisitionToUpdate();
             }

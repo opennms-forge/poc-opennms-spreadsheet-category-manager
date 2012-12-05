@@ -28,16 +28,19 @@
 package org.opennms.forge.spreadsheetcategorymanager;
 
 import org.opennms.forge.provisioningrestclient.api.RequisitionManager;
+import org.opennms.forge.restclient.api.RestRequisitionProvider;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
 import org.opennms.forge.spreadsheetcategorymanager.utils.NodeToCategoryMapping;
 import org.opennms.forge.spreadsheetcategorymanager.utils.SpreadsheetLayouter;
 import org.opennms.netmgt.provision.persist.requisition.Requisition;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionCategory;
+import org.opennms.netmgt.provision.persist.requisition.RequisitionCollection;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -176,6 +179,7 @@ public class RestCategoryProvisioner {
      * Generate an ODS file from an OpenNMS provisioning requisition identified by name.
      * <p/>
      * TODO: Read all nodes, labels and foreign-ids
+     *
      * @return The generated OdsFile for the foreignSource of the RestCategoryProvider.
      */
     public File generateOdsFile() {
@@ -195,7 +199,7 @@ public class RestCategoryProvisioner {
 
         RestRequisitionProvider requisitionProvider = new RestRequisitionProvider(m_restRestConnectionParameter);
         RequisitionCollection allRequisitions = requisitionProvider.getAllRequisitions("");
-        
+
         SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
         for (Requisition requisition : allRequisitions) {
             odsFiles.add(SpreadsheetLayouter.layoutGeneratedOdsFile(spreadsheetReader.getSpeadsheetFromRequisition(requisition)));

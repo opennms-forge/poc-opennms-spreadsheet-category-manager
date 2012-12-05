@@ -20,15 +20,15 @@
  */
 package org.opennms.forge.spreadsheetcategorymanager.utils;
 
-import java.io.File;
-import java.util.List;
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
 import org.odftoolkit.odfdom.doc.table.OdfTableRow;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.util.List;
+
 /**
- *
  * @author Markus@OpenNMS.org
  */
 public class SpreadsheetLayouter {

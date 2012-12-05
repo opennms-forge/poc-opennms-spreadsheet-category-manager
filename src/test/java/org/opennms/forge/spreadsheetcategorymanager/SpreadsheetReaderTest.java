@@ -27,18 +27,18 @@
  *******************************************************************************/
 package org.opennms.forge.spreadsheetcategorymanager;
 
-import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opennms.forge.spreadsheetcategorymanager.utils.NodeToCategoryMapping;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.List;
 import org.opennms.netmgt.provision.persist.requisition.Requisition;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionCategory;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Markus@OpenNMS.org
@@ -87,7 +87,7 @@ public class SpreadsheetReaderTest {
         reqNodeB.setNodeLabel("Node-B");
         reqNodeB.setCategories(reqCatB);
         reqNodes.add(reqNodeB);
-        
+
         requisition.setNodes(reqNodes);
         return requisition;
     }
