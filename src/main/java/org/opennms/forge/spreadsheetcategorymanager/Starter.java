@@ -107,7 +107,6 @@ public class Starter {
             System.exit(1);
         }
 
-        RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, m_foreignSource, m_apply);
         if (m_generateOds) {
             if (allForeignSources) {
                 RestCategoryReader.generateAllOdsFiles(connParm);
@@ -115,6 +114,7 @@ public class Starter {
                 RestCategoryReader.generateOdsFile(m_foreignSource ,connParm);
             }
         } else {
+            RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, m_foreignSource, m_apply);
             restCategoryProvisioner.importCategoriesFromOds(m_odsFileSource);
         }
 
