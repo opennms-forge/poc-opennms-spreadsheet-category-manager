@@ -54,19 +54,19 @@ public class Starter {
     @Option(name = "--password", aliases = {"-p"}, required = true, usage = "m_password to work with the system")
     private String m_password = "admin";
 
-    @Option(name = "--ods-file-source", aliases = {"-odssrc"}, required = true, usage = "path to the odsFile to read from")
+    @Option(name = "--ods-file-source", aliases = {"-odssrc"}, required = false, usage = "path to the odsFile to read from")
     private String m_odsFileSource;
 
     @Option(name = "--foreign-source", aliases = {"-fs"}, required = false, usage = "name of the foreign source to work with")
     private String m_foreignSource;
 
-    @Option(name = "--apply", aliases = {"-a"}, usage = "if this option is set, changes will be applied to the remote system.")
+    @Option(name = "--apply", aliases = {"-a"}, required = false, usage = "if this option is set, changes will be applied to the remote system.")
     private boolean m_apply = false;
 
-    @Option(name = "--generateOds", aliases = {"-genods"}, usage = "if this option is set, just a ods file with the data from the remote system will be created in temp folder.")
+    @Option(name = "--generateOds", aliases = {"-genods"}, required = false, usage = "if this option is set, just a ods file with the data from the remote system will be created in temp folder.")
     private boolean m_generateOds = false;
 
-    @Option(name = "--all-foreign-source", aliases = {"-afs"}, usage = "runs the command for all foreign-sources")
+    @Option(name = "--all-foreign-source", aliases = {"-afs"}, required = false, usage = "runs the command for all foreign-sources")
     private boolean allForeignSources = false;
 
     /**
@@ -111,13 +111,27 @@ public class Starter {
             if (allForeignSources) {
                 RestCategoryReader.generateAllOdsFiles(connParm);
             } else {
-                RestCategoryReader.generateOdsFile(m_foreignSource ,connParm);
+                if (m_foreignSource != null && !m_foreignSource.isEmpty()) {
+                    RestCategoryReader.generateOdsFile(m_foreignSource, connParm);
+                } else {
+                    logger.error("To generate an ods file a foreignsource is required");
+                    parser.printUsage(System.err);
+                }
             }
         } else {
-            RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, m_foreignSource, m_apply);
-            restCategoryProvisioner.importCategoriesFromOds(m_odsFileSource);
+            if (m_foreignSource != null && !m_foreignSource.isEmpty()) {
+                if (m_odsFileSource != null && !m_odsFileSource.isEmpty()) {
+                    RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, m_foreignSource, m_apply);
+                    restCategoryProvisioner.importCategoriesFromOds(m_odsFileSource);
+                } else {
+                    logger.error("To change categories on nodes from a ODS file, a ODS file is required");
+                    parser.printUsage(System.err);
+                }
+            } else {
+                logger.error("To change categories on nodes from a ODS file, a foreignsource is required.");
+                parser.printUsage(System.err);
+            }
         }
-
         logger.info("Thanks for computing with OpenNMS!");
     }
 
