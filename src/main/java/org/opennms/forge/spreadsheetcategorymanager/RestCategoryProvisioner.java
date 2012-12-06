@@ -50,41 +50,18 @@ public class RestCategoryProvisioner {
      */
     private static Logger logger = LoggerFactory.getLogger(RestCategoryProvisioner.class);
 
-    /**
-     * ODS file with node and category association
-     */
-    private File m_odsFile;
-
-    /**
-     * Default do not apply the new categories on the node, give a feedback for sanity check first
-     */
-    private boolean m_apply = false;
-
-    /**
-     * Contains the nodes from OpenNMS and provides access to the requisition node
-     */
-    private RequisitionManager m_requisitionManager;
-
-    /**
-     * Constructor to initialize the ReST category provisioner.
-     *
-     * @param restConnectionParameter Helper to bundle connection parameters for the rest client
-     * @param foreignSource Name of the foreign source which has to be updated
-     * @param apply Flag for preview or directly apply changes in OpenNMS and synchronize the OpenNMS database
-     */
-    public RestCategoryProvisioner(RestConnectionParameter restConnectionParameter, String foreignSource, Boolean apply) {
-        this.m_apply = apply;
-        this.m_requisitionManager = new RequisitionManager(restConnectionParameter, foreignSource);
-    }
 
     /**
      * <p>importCategoriesFromOds</p>
      * <p/>
      * Import nodes with spreadsheet provisioned surveillance categories into OpenNMS.
      *
+     * @param restConnectionParameter helper that keeps baseurl, username, password and so on for rest communication with OpenNMS
+     * @param foreignSource name of the foreign source to update note to category mappings
+     * @param synchronize changes will not just be send to the remote system, they will also be synchronized.
      * @param filename Spreadsheet in ODS format
      */
-    public void importCategoriesFromOds(String filename) {
+    public static void importCategoriesFromOds(RestConnectionParameter restConnectionParameter, String foreignSource, Boolean synchronize, String filename) {
         File odsFile = new File(filename);
 
         // Check if the ODS file can be read
@@ -93,15 +70,17 @@ public class RestCategoryProvisioner {
             System.exit(1);
         }
 
+        RequisitionManager requisitionManager = new RequisitionManager(restConnectionParameter, foreignSource);
+
         logger.debug("ODS file '{}' for import is readable", odsFile.getAbsoluteFile());
         Collection<NodeToCategoryMapping> nodeToCategoryMappings = readNodeToCategoryMappingsFromOdsFile(odsFile);
 
-        changeCategoryMappingsInManagedRequisition(nodeToCategoryMappings);
+        changeNodeToCategoryMappingsInManagedRequisition(nodeToCategoryMappings, requisitionManager);
 
-        m_requisitionManager.sendManagedRequisitionToOpenNMS();
+        requisitionManager.sendManagedRequisitionToOpenNMS();
 
-        if (m_apply) {
-            m_requisitionManager.synchronizeManagedRequisitionOnOpenNMS();
+        if (synchronize) {
+            requisitionManager.synchronizeManagedRequisitionOnOpenNMS();
         }
     }
     /**
@@ -112,7 +91,7 @@ public class RestCategoryProvisioner {
      * @param odsFile the ODS File to read node to category mappings from
      * @return Collection of NodeToCategoryMappings from ODS File
      */
-    private Collection<NodeToCategoryMapping> readNodeToCategoryMappingsFromOdsFile(File odsFile) {
+    private static Collection<NodeToCategoryMapping> readNodeToCategoryMappingsFromOdsFile(File odsFile) {
 
         Collection<NodeToCategoryMapping> nodeToCategoryMappings = new ArrayList<NodeToCategoryMapping>();
 
@@ -124,17 +103,16 @@ public class RestCategoryProvisioner {
             nodeToCategoryMappings = spreadsheetReader.getNodeToCategoryMappingsFromFile();
 
         } catch (IOException e) {
-            logger.error("Error on reading spreadsheet with from '{}'.", this.m_odsFile.getAbsoluteFile(), e);
+            logger.error("Error on reading spreadsheet with from '{}'.", odsFile.getAbsoluteFile(), e);
         }
 
         return nodeToCategoryMappings;
     }
 
-    //TODO JavaDoc
-    private void changeCategoryMappingsInManagedRequisition(Collection<NodeToCategoryMapping> nodeToCategoryMappings) {
+    private static void changeNodeToCategoryMappingsInManagedRequisition(Collection<NodeToCategoryMapping> nodeToCategoryMappings, RequisitionManager requisitionManager) {
 
         for (NodeToCategoryMapping nodeToCategoryMapping : nodeToCategoryMappings) {
-            RequisitionNode requisitionNode = m_requisitionManager.getRequisitionNode(nodeToCategoryMapping.getNodeLabel());
+            RequisitionNode requisitionNode = requisitionManager.getRequisitionNode(nodeToCategoryMapping.getNodeLabel());
             if (requisitionNode != null) {
 
                 //add all set categories
@@ -155,7 +133,7 @@ public class RestCategoryProvisioner {
                     logger.info("RequisitionNode '{}' has no updates", requisitionNode.getNodeLabel());
                 } else {
                     logger.info("RequisitionNode '{}' has updates", requisitionNode.getNodeLabel());
-                    m_requisitionManager.getRequisition().putNode(requisitionNode);
+                    requisitionManager.getRequisition().putNode(requisitionNode);
                 }
 
             } else {

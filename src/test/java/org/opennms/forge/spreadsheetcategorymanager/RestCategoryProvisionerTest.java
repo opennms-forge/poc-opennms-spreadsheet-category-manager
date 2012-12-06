@@ -69,7 +69,6 @@ public class RestCategoryProvisionerTest {
     public void setUp() {
         try {
             RestConnectionParameter conParm = new OnmsRestConnectionParameter(this.m_baseUrl, this.m_userName, this.m_password);
-            m_provider = new RestCategoryProvisioner(conParm, m_foreignSource, m_apply);
         } catch (MalformedURLException e) {
             logger.error("Invalid base UrL '{}'. Error message: '{}'", this.m_baseUrl, e.getMessage());
         }

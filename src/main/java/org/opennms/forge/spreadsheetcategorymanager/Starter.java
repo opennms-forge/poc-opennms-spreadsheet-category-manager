@@ -51,7 +51,7 @@ public class Starter {
     @Option(name = "--username", aliases = {"-u"}, required = true, usage = "username to work with the system")
     private String m_username = "admin";
 
-    @Option(name = "--password", aliases = {"-p"}, required = true, usage = "m_password to work with the system")
+    @Option(name = "--password", aliases = {"-p"}, required = true, usage = "password to work with the system")
     private String m_password = "admin";
 
     @Option(name = "--ods-file-source", aliases = {"-odssrc"}, required = false, usage = "path to the odsFile to read from")
@@ -60,8 +60,8 @@ public class Starter {
     @Option(name = "--foreign-source", aliases = {"-fs"}, required = false, usage = "name of the foreign source to work with")
     private String m_foreignSource;
 
-    @Option(name = "--apply", aliases = {"-a"}, required = false, usage = "if this option is set, changes will be applied to the remote system.")
-    private boolean m_apply = false;
+    @Option(name = "--synchronize", aliases = {"-sync"}, required = false, usage = "changes will not just be send to the remote system, they will also be synchronized.")
+    private boolean m_synchronize = false;
 
     @Option(name = "--generateOds", aliases = {"-genods"}, required = false, usage = "if this option is set, just a ods file with the data from the remote system will be created in temp folder.")
     private boolean m_generateOds = false;
@@ -121,8 +121,7 @@ public class Starter {
         } else {
             if (m_foreignSource != null && !m_foreignSource.isEmpty()) {
                 if (m_odsFileSource != null && !m_odsFileSource.isEmpty()) {
-                    RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, m_foreignSource, m_apply);
-                    restCategoryProvisioner.importCategoriesFromOds(m_odsFileSource);
+                    RestCategoryProvisioner.importCategoriesFromOds(connParm, m_foreignSource, m_synchronize, m_odsFileSource);
                 } else {
                     logger.error("To change categories on nodes from a ODS file, a ODS file is required");
                     parser.printUsage(System.err);
