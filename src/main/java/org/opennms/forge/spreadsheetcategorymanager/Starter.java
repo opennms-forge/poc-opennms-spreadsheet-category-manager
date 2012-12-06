@@ -57,7 +57,7 @@ public class Starter {
     @Option(name = "--ods-file-source", aliases = {"-odssrc"}, required = true, usage = "path to the odsFile to read from")
     private String m_odsFileSource;
 
-    @Option(name = "--foreign-source", aliases = {"-fs"}, required = true, usage = "name of the foreign source to work with")
+    @Option(name = "--foreign-source", aliases = {"-fs"}, required = false, usage = "name of the foreign source to work with")
     private String m_foreignSource;
 
     @Option(name = "--apply", aliases = {"-a"}, usage = "if this option is set, changes will be applied to the remote system.")
@@ -86,9 +86,6 @@ public class Starter {
 
         RestConnectionParameter connParm = null;
 
-        File workspace = setupWorkspace();
-        setupLoggingFolder(workspace);
-
         CmdLineParser parser = new CmdLineParser(this);
         parser.setUsageWidth(TERMINAL_WIDTH);
 
@@ -113,9 +110,9 @@ public class Starter {
         RestCategoryProvisioner restCategoryProvisioner = new RestCategoryProvisioner(connParm, m_foreignSource, m_apply);
         if (m_generateOds) {
             if (allForeignSources) {
-                restCategoryProvisioner.generateAllOdsFiles();
+                RestCategoryReader.generateAllOdsFiles(connParm);
             } else {
-                restCategoryProvisioner.generateOdsFile();
+                RestCategoryReader.generateOdsFile(m_foreignSource ,connParm);
             }
         } else {
             restCategoryProvisioner.importCategoriesFromOds(m_odsFileSource);
@@ -124,6 +121,8 @@ public class Starter {
         logger.info("Thanks for computing with OpenNMS!");
     }
 
+    @Deprecated
+    //not used yet
     private File setupWorkspace() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
         DateFormatter dateFormatter = new DateFormatter(dateFormat);
@@ -143,6 +142,8 @@ public class Starter {
         return workspace;
     }
 
+    @Deprecated
+    //not used yet
     private void setupLoggingFolder(File workspace) {
         //TODO Tak
     }

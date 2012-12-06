@@ -28,7 +28,6 @@
 package org.opennms.forge.spreadsheetcategorymanager;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.opennms.forge.restclient.utils.OnmsRestConnectionParameter;
 import org.opennms.forge.restclient.utils.RestConnectionParameter;
 import org.slf4j.Logger;
@@ -74,10 +73,5 @@ public class RestCategoryProvisionerTest {
         } catch (MalformedURLException e) {
             logger.error("Invalid base UrL '{}'. Error message: '{}'", this.m_baseUrl, e.getMessage());
         }
-    }
-
-    @Test
-    public void testGenerateAllOdsFile() {
-        m_provider.generateAllOdsFiles();
     }
 }
