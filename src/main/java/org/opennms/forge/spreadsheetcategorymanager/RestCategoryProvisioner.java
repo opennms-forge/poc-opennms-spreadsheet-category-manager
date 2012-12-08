@@ -36,9 +36,8 @@ import java.util.Collection;
 /**
  * <p>RestCategoryProvisioner class.</p>
  * The main program to manage categories in provisioning via rest powered by spreadsheets.
- * 
- * @author <a href="mailto:markus@opennms.org">Markus Neumann</a>
  *
+ * @author <a href="mailto:markus@opennms.org">Markus Neumann</a>
  * @author <a href="mailto:ronny@opennms.org">Ronny Trommer</a>
  * @version 1.0-SNAPSHOT
  * @since 1.0-SNAPSHOT
@@ -50,16 +49,15 @@ public class RestCategoryProvisioner {
      */
     private static Logger logger = LoggerFactory.getLogger(RestCategoryProvisioner.class);
 
-
     /**
      * <p>importCategoriesFromOds</p>
      * <p/>
      * Import nodes with spreadsheet provisioned surveillance categories into OpenNMS.
      *
-     * @param restConnectionParameter helper that keeps baseurl, username, password and so on for rest communication with OpenNMS
-     * @param foreignSource name of the foreign source to update note to category mappings
-     * @param synchronize changes will not just be send to the remote system, they will also be synchronized.
-     * @param filename Spreadsheet in ODS format
+     * @param restConnectionParameter helper that keeps base URL, username, password and so on for rest communication with OpenNMS
+     * @param foreignSource           name of the foreign source to update note to category mappings
+     * @param synchronize             changes will not just be send to the remote system, they will also be synchronized.
+     * @param filename                Spreadsheet in ODS format
      */
     public static void importCategoriesFromOds(RestConnectionParameter restConnectionParameter, String foreignSource, Boolean synchronize, String filename) {
         File odsFile = new File(filename);
@@ -67,7 +65,6 @@ public class RestCategoryProvisioner {
         // Check if the ODS file can be read
         if (!odsFile.canRead()) {
             logger.error("Cannot read ODS file for import in '{}'.", filename);
-            System.exit(1);
         }
 
         RequisitionManager requisitionManager = new RequisitionManager(restConnectionParameter, foreignSource);
@@ -83,6 +80,7 @@ public class RestCategoryProvisioner {
             requisitionManager.synchronizeManagedRequisitionOnOpenNMS();
         }
     }
+
     /**
      * <p>readNodeToCategoryMappingsFromOdsFile</p>
      * <p/>
