@@ -38,6 +38,8 @@ import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
@@ -102,11 +104,12 @@ public class SpreadsheetWriter {
      * Build spreadsheet file from a give OpenNMS requisition.
      *
      * @param requisition Requisition for generating the spreadsheet {@link org.opennms.netmgt.provision.persist.requisition.Requisition}
+     * @param templateOds Ods template file to use for output, pass null to use default template.
      * @return ODS file with exported data from OpenNMS as {@link java.io.File}
      */
-    public File getSpreadsheetFromRequisition(Requisition requisition) {
+    public File getSpreadsheetFromRequisition(Requisition requisition, File templateOds) {
         String outputFilename = System.getProperty("java.io.tmpdir") + File.separator + requisition.getForeignSource() + ODS_EXTENSION;
-        File odsOutput = getSpreadsheetFromRequisition(requisition, outputFilename);
+        File odsOutput = getSpreadsheetFromRequisition(requisition, outputFilename, templateOds);
         return odsOutput;
     }
 
@@ -117,17 +120,29 @@ public class SpreadsheetWriter {
      *
      * @param requisition    Requisition for generating the spreadsheet {@link org.opennms.netmgt.provision.persist.requisition.Requisition}
      * @param outputFilename User defined path and file name for output as {@link java.lang.String}
+     * @param templateOds Ods template file to use for output, pass null to use default template.
      * @return ODS file with exported data from OpenNMS as {@link java.io.File}
      */
-    public File getSpreadsheetFromRequisition(Requisition requisition, String outputFilename) {
+    public File getSpreadsheetFromRequisition(Requisition requisition, String outputFilename, File templateOds) {
         if (requisition == null) {
             logger.error("Requisition was null");
             return null;
         }
+        InputStream template = null;
+        if (templateOds != null) {
+            try {
+                template = new FileInputStream(templateOds);
+            } catch (FileNotFoundException ex) {
+                logger.error("Reading TemplateFile '{}' went wrong.", templateOds, ex);
+                logger.error("Fallback to default template");
+                template = this.getClass().getClassLoader().getResourceAsStream(DEFAUlT_ODS_TEMPLATE);
+            }
+        } else {
+            template = this.getClass().getClassLoader().getResourceAsStream(DEFAUlT_ODS_TEMPLATE);
+        }
 
         File odsOutFile = new File(outputFilename);
         try {
-            InputStream template = this.getClass().getClassLoader().getResourceAsStream(DEFAUlT_ODS_TEMPLATE);
             OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.loadDocument(template);
             OdfTable thresholdTable = spreadsheet.getTableList().get(0);
             thresholdTable.setTableName(requisition.getForeignSource() + " " + THRESHOLD_TAG);
@@ -139,6 +154,20 @@ public class SpreadsheetWriter {
             Set<String> categories = new TreeSet<String>();
             Set<String> thresholdCategories = new TreeSet<String>();
 
+            //load preset categories from template and add to category lists
+            Integer thCatIndex = 1;
+            while (!thresholdTable.getRowByIndex(0).getCellByIndex(thCatIndex).getDisplayText().isEmpty()) {
+                thresholdCategories.add(thresholdTable.getRowByIndex(0).getCellByIndex(thCatIndex).getDisplayText().trim());
+                thCatIndex++;
+            }
+
+            Integer catIndex = 1;
+            while (!categoryTable.getRowByIndex(0).getCellByIndex(catIndex).getDisplayText().isEmpty()) {
+                categories.add(categoryTable.getRowByIndex(0).getCellByIndex(catIndex).getDisplayText().trim());
+                catIndex++;
+            }
+
+            
             for (RequisitionNode reqNode : requisition.getNodes()) {
                 reqNodes.put(reqNode.getNodeLabel(), reqNode);
                 for (RequisitionCategory reqCategory : reqNode.getCategories()) {

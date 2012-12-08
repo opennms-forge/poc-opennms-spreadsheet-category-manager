@@ -53,7 +53,7 @@ public class SpreadsheetWriterTest {
 
     @Test
     public void testGetSpreadsheetFromRequisition() {
-        writer.getSpreadsheetFromRequisition(generateTestRequisition());
+        writer.getSpreadsheetFromRequisition(generateTestRequisition(), null);
     }
 
     private Requisition generateTestRequisition() {

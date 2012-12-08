@@ -69,6 +69,9 @@ public class Starter {
     @Option(name = "--all-foreign-source", aliases = {"-afs"}, required = false, usage = "runs the command for all foreign-sources")
     private boolean allForeignSources = false;
 
+    @Option(name = "--OdsTemplate", aliases = {"-t"}, required = false, usage = "path to a odsFile as template for generation")
+    private String m_tempateOdsPath = null;
+
     /**
      * Set maximal terminal width for line breaks
      */
@@ -108,11 +111,22 @@ public class Starter {
         }
 
         if (m_generateOds) {
+            File templateOdsFile = null;
+            if (m_tempateOdsPath != null) {
+                templateOdsFile = new File(m_tempateOdsPath);
+                if (!templateOdsFile.canRead()) {
+                    logger.error("Cant read ODS template ''", m_tempateOdsPath);
+                    System.exit(1);
+                }
+            } else {
+                logger.info("Using default ODS template");
+            }
+
             if (allForeignSources) {
-                RestCategoryReader.generateAllOdsFiles(connParm);
+                RestCategoryReader.generateAllOdsFiles(connParm, templateOdsFile);
             } else {
                 if (m_foreignSource != null && !m_foreignSource.isEmpty()) {
-                    RestCategoryReader.generateOdsFile(m_foreignSource, connParm);
+                    RestCategoryReader.generateOdsFile(m_foreignSource, connParm, templateOdsFile);
                 } else {
                     logger.error("To generate an ods file a foreignsource is required");
                     parser.printUsage(System.err);

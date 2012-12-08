@@ -62,11 +62,19 @@ public final class RestCategoryReader {
      * @param connectionParameter object that keeps baseUrl, user, password and so on for the rest calls
      * @return The generated OdsFile for the foreignSource of the remote OpenNMS defined in the connectionParameter.
      */
-    public static File generateOdsFile(String foreignSource, RestConnectionParameter connectionParameter) {
+    public static File generateOdsFile(String foreignSource, RestConnectionParameter connectionParameter, File templateOds) {
         Requisition requisition = new RestRequisitionProvider(connectionParameter).getRequisition(foreignSource, "");
 
+        if (templateOds != null) {
+            if (!(templateOds.exists() && templateOds.canRead())) {
+                logger.error("Ods template file '{}' dose not exist, or is not readable.", templateOds);
+                logger.error("Fallback to default ods template");
+                templateOds = null;
+            }
+        }
+
         SpreadsheetWriter spreadsheetWriter = new SpreadsheetWriter();
-        File generatedOdsFile = spreadsheetWriter.getSpreadsheetFromRequisition(requisition);
+        File generatedOdsFile = spreadsheetWriter.getSpreadsheetFromRequisition(requisition, templateOds);
 
         return generatedOdsFile;
     }
@@ -76,15 +84,23 @@ public final class RestCategoryReader {
      * @param connectionParameter object that keeps baseUrl, user, password and so on for the rest calls
      * @return A List of generated OdsFiles for all foreignSources of the remote opennms defined in the connectionParameter.
      */
-    public static List<File> generateAllOdsFiles(RestConnectionParameter connectionParameter) {
+    public static List<File> generateAllOdsFiles(RestConnectionParameter connectionParameter, File templateOds) {
         List<File> odsFiles = new ArrayList<File>();
 
         RestRequisitionProvider requisitionProvider = new RestRequisitionProvider(connectionParameter);
         RequisitionCollection allRequisitions = requisitionProvider.getAllRequisitions("");
 
+        if (templateOds != null) {
+            if (!(templateOds.exists() && templateOds.canRead())) {
+                logger.error("Ods template file '{}' dose not exist, or is not readable.", templateOds);
+                logger.error("Fallback to default ods template");
+                templateOds = null;
+            }
+        }
+
         SpreadsheetWriter spreadsheetWriter = new SpreadsheetWriter();
         for (Requisition requisition : allRequisitions) {
-            odsFiles.add(spreadsheetWriter.getSpreadsheetFromRequisition(requisition));
+            odsFiles.add(spreadsheetWriter.getSpreadsheetFromRequisition(requisition, templateOds));
         }
         return odsFiles;
     }
