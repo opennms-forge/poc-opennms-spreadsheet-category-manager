@@ -150,9 +150,9 @@ public class SpreadsheetWriter {
             OdfTable categoryTable = spreadsheet.getTableList().get(1);
             categoryTable.setTableName(requisition.getForeignSource() + " " + SURVEILLANCE_CATEGORIES);
 
-            Map<String, RequisitionNode> reqNodes = new TreeMap<String, RequisitionNode>();
-            Set<String> categories = new TreeSet<String>();
-            Set<String> thresholdCategories = new TreeSet<String>();
+            Map<String, RequisitionNode> reqNodes = new TreeMap<>();
+            Set<String> categories = new TreeSet<>();
+            Set<String> thresholdCategories = new TreeSet<>();
 
             //load preset categories from template and add to category lists
             Integer thCatIndex = 1;

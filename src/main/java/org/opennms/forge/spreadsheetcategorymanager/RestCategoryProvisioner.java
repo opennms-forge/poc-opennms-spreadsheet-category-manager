@@ -91,7 +91,7 @@ public class RestCategoryProvisioner {
      */
     private static Collection<NodeToCategoryMapping> readNodeToCategoryMappingsFromOdsFile(File odsFile) {
 
-        Collection<NodeToCategoryMapping> nodeToCategoryMappings = new ArrayList<NodeToCategoryMapping>();
+        Collection<NodeToCategoryMapping> nodeToCategoryMappings = new ArrayList<>();
 
         //read node to category mappings from spreadsheet
         SpreadsheetReader spreadsheetReader;

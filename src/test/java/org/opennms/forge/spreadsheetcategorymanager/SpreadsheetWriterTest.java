@@ -58,9 +58,9 @@ public class SpreadsheetWriterTest {
 
     private Requisition generateTestRequisition() {
         Requisition requisition = new Requisition("TestRequisition");
-        List<RequisitionNode> reqNodes = new ArrayList<RequisitionNode>();
+        List<RequisitionNode> reqNodes = new ArrayList<>();
 
-        List<RequisitionCategory> reqCatA = new ArrayList<RequisitionCategory>();
+        List<RequisitionCategory> reqCatA = new ArrayList<>();
         reqCatA.add(new RequisitionCategory("Category-A"));
 
         RequisitionNode reqNodeA = new RequisitionNode();
@@ -69,7 +69,7 @@ public class SpreadsheetWriterTest {
         reqNodeA.setCategories(reqCatA);
         reqNodes.add(reqNodeA);
 
-        List<RequisitionCategory> reqCatB = new ArrayList<RequisitionCategory>();
+        List<RequisitionCategory> reqCatB = new ArrayList<>();
         reqCatB.add(new RequisitionCategory("Category-B"));
 
         RequisitionNode reqNodeB = new RequisitionNode();

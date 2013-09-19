@@ -37,8 +37,8 @@ import java.util.List;
  */
 public class NodeToCategoryMapping {
     String nodeLabel;
-    List<RequisitionCategory> addCategories = new ArrayList<RequisitionCategory>();
-    List<RequisitionCategory> removeCategories = new ArrayList<RequisitionCategory>();
+    List<RequisitionCategory> addCategories = new ArrayList<>();
+    List<RequisitionCategory> removeCategories = new ArrayList<>();
 
     public NodeToCategoryMapping(String nodeLabel) {
         this.nodeLabel = nodeLabel;

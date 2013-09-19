@@ -30,7 +30,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>SpreadsheetReader class.</p>
@@ -60,7 +64,7 @@ public class SpreadsheetReader {
     }
 
     public Collection<NodeToCategoryMapping> getNodeToCategoryMappingsFromFile() {
-        Map<String, NodeToCategoryMapping> nodesToCategories = new HashMap<String, NodeToCategoryMapping>();
+        Map<String, NodeToCategoryMapping> nodesToCategories = new HashMap<>();
 
         try {
             OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.loadDocument(this.m_odsFile);
@@ -83,7 +87,7 @@ public class SpreadsheetReader {
         NodeToCategoryMapping nodeToCategoryMapping;
 
         //Build a list of all Categories
-        List<String> categories = new LinkedList<String>();
+        List<String> categories = new LinkedList<>();
         int categoryIndex = 1;
         while (!categoryRow.getCellByIndex(categoryIndex).getDisplayText().equals("")) {
             categories.add(categoryRow.getCellByIndex(categoryIndex).getDisplayText().trim());

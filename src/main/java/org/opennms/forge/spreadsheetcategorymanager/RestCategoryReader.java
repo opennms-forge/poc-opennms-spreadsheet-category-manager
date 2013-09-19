@@ -85,7 +85,7 @@ public final class RestCategoryReader {
      * @return A List of generated OdsFiles for all foreignSources of the remote opennms defined in the connectionParameter.
      */
     public static List<File> generateAllOdsFiles(RestConnectionParameter connectionParameter, File templateOds) {
-        List<File> odsFiles = new ArrayList<File>();
+        List<File> odsFiles = new ArrayList<>();
 
         RestRequisitionProvider requisitionProvider = new RestRequisitionProvider(connectionParameter);
         RequisitionCollection allRequisitions = requisitionProvider.getAllRequisitions("");

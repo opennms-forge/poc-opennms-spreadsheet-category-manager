@@ -51,7 +51,7 @@ public class SpreadsheetReaderTest {
         try {
             reader = new SpreadsheetReader(new File("src/test/resources/ImportTest.ods"));
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            logger.error("Error during spreadsheed reading", e);
         }
     }
 

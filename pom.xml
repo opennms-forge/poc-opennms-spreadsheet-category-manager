@@ -18,6 +18,11 @@
         <!-- OpenNMS Model -->
         <dependency>
             <groupId>org.opennms.forge</groupId>
+            <artifactId>opennms-rest-client-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opennms.forge</groupId>
             <artifactId>opennms-provisioning-rest-client-api</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
@@ -26,7 +31,7 @@
         <dependency>
             <groupId>args4j</groupId>
             <artifactId>args4j</artifactId>
-            <version>2.0.16</version>
+            <version>2.0.25</version>
         </dependency>
 
         <!-- OpenDocument API for ODS -->
@@ -35,11 +40,12 @@
             <artifactId>odfdom-java</artifactId>
             <version>0.8.7</version>
         </dependency>
+        
+        <!-- Testing --> 
         <dependency>
-            <groupId>org.opennms.forge</groupId>
-            <artifactId>opennms-rest-client-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <type>jar</type>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
         </dependency>
     </dependencies>
     <build>
@@ -47,15 +53,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>3.1</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
