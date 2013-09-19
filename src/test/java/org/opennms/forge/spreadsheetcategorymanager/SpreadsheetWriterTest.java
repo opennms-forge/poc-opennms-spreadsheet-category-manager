@@ -29,6 +29,7 @@ package org.opennms.forge.spreadsheetcategorymanager;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.opennms.netmgt.provision.persist.requisition.Requisition;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionCategory;
 import org.opennms.netmgt.provision.persist.requisition.RequisitionNode;
@@ -52,7 +53,9 @@ public class SpreadsheetWriterTest {
     }
 
     @Test
+    @Ignore
     public void testGetSpreadsheetFromRequisition() {
+        //this step is creating a TestRequisition.ods in the temp folder.
         writer.getSpreadsheetFromRequisition(generateTestRequisition(), null);
     }
 
