@@ -74,7 +74,6 @@ public class RestCategoryProvisioner {
         Collection<NodeToCategoryMapping> nodeToCategoryMappings = readNodeToCategoryMappingsFromOdsFile(odsFile);
 
         changeNodeToCategoryMappingsInManagedRequisition(nodeToCategoryMappings, requisitionManager);
-        requisitionManager.getRequisition().setDate(new Date());
         requisitionManager.sendManagedRequisitionToOpenNMS();
 
         if (synchronize) {
