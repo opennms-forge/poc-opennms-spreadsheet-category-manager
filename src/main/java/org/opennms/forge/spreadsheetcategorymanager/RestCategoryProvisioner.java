@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * <p>RestCategoryProvisioner class.</p>
@@ -73,7 +74,7 @@ public class RestCategoryProvisioner {
         Collection<NodeToCategoryMapping> nodeToCategoryMappings = readNodeToCategoryMappingsFromOdsFile(odsFile);
 
         changeNodeToCategoryMappingsInManagedRequisition(nodeToCategoryMappings, requisitionManager);
-
+        requisitionManager.getRequisition().setDate(new Date());
         requisitionManager.sendManagedRequisitionToOpenNMS();
 
         if (synchronize) {
